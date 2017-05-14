@@ -1,7 +1,9 @@
 const nodemailer = require('nodemailer');
 const app = require('express')();
 const router = require('express').Router();
+
 const port = process.env.PORT || 8009;
+const debug = process.env.DEBUG || false;
 
 const host = process.env.HOST_NAME;
 const portNo = process.env.PORT_NUMBER;
@@ -18,29 +20,48 @@ router.get('/', sendEmail); // handle the route at yourdomain.com/sayHello
 
 function sendEmail(req, res) {
   // Not the movie transporter!
+  // const transporter = nodemailer.createTransport({
+  //   host: host,
+  //   port: portNo,
+  //   secure: secure,
+  //   secureConnection: secureConnection,
+  //   auth: {
+  //     user: user, // Your email id
+  //     pass: pass // Your password
+  //   }
+  // });
+
   const transporter = nodemailer.createTransport({
     host: host,
     port: portNo,
     secure: secure,
-    secureConnection: secureConnection,
+    secureConnection: secure,
     auth: {
       user: user, // Your email id
       pass: pass // Your password
+    },
+    tls: {
+      rejectUnauthorized: secure
     }
   });
 
-  if (!!rejectUnauthorized || rejectUnauthorized === 'false') {
-    transporter.tls = {
-      rejectUnauthorized: rejectUnauthorized
-    }
-  }
+  // if (!!rejectUnauthorized || rejectUnauthorized === 'false') {
+  //   transporter.tls = {
+  //     rejectUnauthorized: rejectUnauthorized
+  //   }
+  // }
+  //
+  // if (!!ciphers) {
+  //   if (!transporter.hasOwnProperty('tls')) {
+  //     transporter.tls = {};
+  //   }
+  //
+  //   transporter.tls.ciphers = ciphers;
+  // }
 
-  if (!!ciphers) {
-    if (!transporter.hasOwnProperty('tls')) {
-      transporter.tls = {};
-    }
-
-    transporter.tls.ciphers = ciphers;
+  if (!!debug) {
+    console.log('transporter:\n==================\n');
+    console.log(transporter);
   }
 
   var mailOptions = {
