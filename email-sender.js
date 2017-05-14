@@ -22,11 +22,9 @@ const secureConnection = process.env.SECURE_CONNECTION === 'true' || false;
 const rejectUnauthorized = process.env.REJECT_UNAUTHORIZED || null;
 const ciphers = process.env.CIPHERS || null;
 
-router.post('/', sendEmail);
+// Private methods
 
-module.exports = router;
-
-function sendEmail(req, res) {
+const buildTransporter = () => {
   const transporterBuilder = {
     host: host,
     port: portNo,
@@ -52,6 +50,14 @@ function sendEmail(req, res) {
     transporterBuilder.tls.ciphers = ciphers;
   }
 
+  return transporterBuilder;
+};
+
+// Public methods
+
+const sendEmail = (req, res) => {
+  const transporterBuilder = buildTransporter();
+
   const transporter = nodemailer.createTransport(transporterBuilder);
 
   if (!!debug) {
@@ -60,14 +66,14 @@ function sendEmail(req, res) {
   }
 
   const mailOptions = {
-    from: '"Our Code World " <noreply@sonnywebdesign.com>', // sender address (who sends)
-    to: 'andreasonny83@gmail.com', // list of receivers
-    subject: 'Hello', // Subject line
-    text: 'Hello world ', // plaintext body
-    html: '<b>Hello world </b><br> This is the first email sent with Nodemailer in Node.js' // html body
+    from: `'${req.body.from}' <noreply@sonnywebdesign.com>`, // sender address (who sends)
+    to: req.body.to, // list of receivers
+    subject: req.body.subject, // Subject line
+    text: req.body.text, // plaintext body
+    html: req.body.html // html body
   };
 
-  transporter.sendMail(mailOptions, function(error, info) {
+  transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.log(error);
       res.json({error: 'error'});
@@ -76,4 +82,9 @@ function sendEmail(req, res) {
       res.json({sent: info.response});
     };
   });
-}
+};
+
+// Router
+router.post('/', sendEmail);
+
+module.exports = router;
