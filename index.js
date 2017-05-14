@@ -1,74 +1,73 @@
-const nodemailer = require('nodemailer');
+/**
+ * node-mailsender
+ *
+ * @license
+ * Copyright (c) 2017 by andreasonny83. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at
+ * https://github.com/andreasonny83/node-mailsender/blob/master/LICENSE
+ */
 const app = require('express')();
-const router = require('express').Router();
+const bodyParser = require('body-parser');
+const pkginfo = require('pkginfo')(module);
+const emailSender = require('./email-sender');
 
 const port = process.env.PORT || 8009;
-const debug = process.env.DEBUG || false;
+const debug = process.env.DEBUG === 'true' || false;
 
-const host = process.env.HOST_NAME;
-const portNo = process.env.PORT_NUMBER;
-const user = process.env.USER_NAME;
-const pass = process.env.PASSWORD;
-const secure = process.env.SECURE === 'true' || false;
-const secureConnection = process.env.SECURE_CONNECTION === 'true' || false;
-const rejectUnauthorized = process.env.REJECT_UNAUTHORIZED || null;
-const ciphers = process.env.CIPHERS || null;
+const appName = module.exports.name;
+const appVersion = module.exports.version;
 
-app.use('/send', router);
+app.disable('x-powered-by');
+app.use(bodyParser.json());
 
-router.get('/', sendEmail); // handle the route at yourdomain.com/sayHello
+app.use(function(req, res, next) {
+  /**
+   * urls should be semicolumn separated
+   * eg. http://my.website.com;https://my.website.com;http://wwww.another.website.com
+   */
+  const whitelistUrls = (process.env.CLIENT_URLS || '').split(';');
+  const origin = req.headers.origin;
 
-function sendEmail(req, res) {
-  const transporterBuilder = {
-    host: host,
-    port: portNo,
-    secure: secure,
-    secureConnection: secureConnection,
-    auth: {
-      user: user, // Your email id
-      pass: pass // Your password
+  if (debug) {
+    console.log('[LOG] Request coming from:', origin);
+  }
+
+  // Website you wish to allow to connect
+  if (whitelistUrls.indexOf(origin) > -1) {
+    if (debug) {
+      console.log('[LOG] Whitelisting ' + origin + ' domain');
+    }
+
+    res.header('Access-Control-Allow-Origin', origin);
+  } else {
+    if (debug) {
+      console.log('[LOG] Invalid request coming from:', origin);
     }
   }
 
-  if (!!rejectUnauthorized) {
-    transporterBuilder.tls = {
-      rejectUnauthorized: rejectUnauthorized === 'false' ? false : true
-    }
-  }
+  // Request headers you wish to allow
+  res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin');
+  // Request methods you wish to allow
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
 
-  if (!!ciphers) {
-    if (!transporterBuilder.hasOwnProperty('tls')) {
-      transporterBuilder.tls = {};
-    }
+  next();
+});
 
-    transporterBuilder.tls.ciphers = ciphers;
-  }
+app.use('/send', emailSender);
 
-  const transporter = nodemailer.createTransport(transporterBuilder);
-
-  if (!!debug) {
-    console.log('\ntransporter:\n============\n');
-    console.log(transporter);
-  }
-
-  const mailOptions = {
-    from: '"Our Code World " <noreply@sonnywebdesign.com>', // sender address (who sends)
-    to: 'andreasonny83@gmail.com', // list of receivers
-    subject: 'Hello', // Subject line
-    text: 'Hello world ', // plaintext body
-    html: '<b>Hello world </b><br> This is the first email sent with Nodemailer in Node.js' // html body
+app.get('/status', (req, res) => {
+  const data = {
+    app: appName,
+    version: appVersion,
+    status: 200,
+    message: 'OK - ' + Math.random().toString(36).substr(3, 8),
+    time: new Date()
   };
 
-  transporter.sendMail(mailOptions, function(error, info) {
-    if (error) {
-      console.log(error);
-      res.json({error: 'error'});
-    } else {
-      console.log('Message sent: ' + info.response);
-      res.json({sent: info.response});
-    };
-  });
-}
+  res.status(200).json(data);
+});
 
 app.listen(port, function() {
   console.log(`Express server is listening on http://localhost:${port}`);
