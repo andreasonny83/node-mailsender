@@ -34,6 +34,8 @@ app.use(function(req, res, next) {
     console.log('[LOG] Request coming from:', origin);
   }
 
+  console.log(req.headers);
+
   // Website you wish to allow to connect
   if (whitelistUrls.indexOf(origin) > -1) {
     if (debug) {
@@ -41,10 +43,14 @@ app.use(function(req, res, next) {
     }
 
     res.header('Access-Control-Allow-Origin', origin);
-  } else {
+  } else if (req.headers.host !== `localhost:${port}`) {
+    // allow everything when running on a local environment
     if (debug) {
       console.log('[LOG] Invalid request coming from:', origin);
     }
+
+    // Send Forbidden if the request is not coming from a whitelisted domain
+    return res.sendStatus(403);
   }
 
   // Request headers you wish to allow
