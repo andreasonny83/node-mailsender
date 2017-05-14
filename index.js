@@ -23,6 +23,7 @@ function sendEmail(req, res) {
     host: host,
     port: portNo,
     secure: secure,
+    secureConnection: secureConnection,
     auth: {
       user: user, // Your email id
       pass: pass // Your password
