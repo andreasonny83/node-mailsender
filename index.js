@@ -8,6 +8,9 @@ const portNo = process.env.PORT_NUMBER;
 const user = process.env.USER_NAME;
 const pass = process.env.PASSWORD;
 const secure = process.env.SECURE || false;
+const secureConnection = process.env.SECURE_CONNECTION || null;
+const rejectUnauthorized = process.env.REJECT_UNAUTHORIZED || null;
+const ciphers = process.env.CIPHERS || false;
 
 app.use('/send', router);
 
@@ -19,15 +22,26 @@ function sendEmail(req, res) {
     host: host,
     port: portNo,
     secure: secure,
-    secureConnection: secure,
+    secureConnection: secureConnection,
     auth: {
       user: user, // Your email id
       pass: pass // Your password
-    },
-    tls: {
-      rejectUnauthorized: secure
     }
   });
+
+  if (!!rejectUnauthorized || rejectUnauthorized === 'false') {
+    transporter.tls = {
+      rejectUnauthorized: rejectUnauthorized
+    }
+  }
+
+  if (!!ciphers) {
+    if (!transporter.hasOwnProperty(tls)) {
+      transporter.tls = {};
+    }
+
+    transporter.tls.ciphers = ciphers;
+  }
 
   var mailOptions = {
     from: '"Our Code World " <noreply@sonnywebdesign.com>', // sender address (who sends)
