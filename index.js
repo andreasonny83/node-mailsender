@@ -9,62 +9,48 @@ const host = process.env.HOST_NAME;
 const portNo = process.env.PORT_NUMBER;
 const user = process.env.USER_NAME;
 const pass = process.env.PASSWORD;
-const secure = process.env.SECURE || false;
-const secureConnection = process.env.SECURE_CONNECTION || null;
+const secure = process.env.SECURE === 'true' || false;
+const secureConnection = process.env.SECURE_CONNECTION === 'true' || false;
 const rejectUnauthorized = process.env.REJECT_UNAUTHORIZED || null;
-const ciphers = process.env.CIPHERS || false;
+const ciphers = process.env.CIPHERS || null;
 
 app.use('/send', router);
 
 router.get('/', sendEmail); // handle the route at yourdomain.com/sayHello
 
 function sendEmail(req, res) {
-  // Not the movie transporter!
-  // const transporter = nodemailer.createTransport({
-  //   host: host,
-  //   port: portNo,
-  //   secure: secure,
-  //   secureConnection: secureConnection,
-  //   auth: {
-  //     user: user, // Your email id
-  //     pass: pass // Your password
-  //   }
-  // });
-
-  const transporter = nodemailer.createTransport({
+  const transporterBuilder = {
     host: host,
     port: portNo,
     secure: secure,
-    secureConnection: secure,
     auth: {
       user: user, // Your email id
       pass: pass // Your password
-    },
-    tls: {
-      rejectUnauthorized: secure
     }
-  });
+  }
 
-  // if (!!rejectUnauthorized || rejectUnauthorized === 'false') {
-  //   transporter.tls = {
-  //     rejectUnauthorized: rejectUnauthorized
-  //   }
-  // }
-  //
-  // if (!!ciphers) {
-  //   if (!transporter.hasOwnProperty('tls')) {
-  //     transporter.tls = {};
-  //   }
-  //
-  //   transporter.tls.ciphers = ciphers;
-  // }
+  if (!!rejectUnauthorized) {
+    transporterBuilder.tls = {
+      rejectUnauthorized: rejectUnauthorized === 'false' ? false : true
+    }
+  }
+
+  if (!!ciphers) {
+    if (!transporterBuilder.hasOwnProperty('tls')) {
+      transporterBuilder.tls = {};
+    }
+
+    transporterBuilder.tls.ciphers = ciphers;
+  }
+
+  const transporter = nodemailer.createTransport(transporterBuilder);
 
   if (!!debug) {
-    console.log('transporter:\n==================\n');
+    console.log('\ntransporter:\n============\n');
     console.log(transporter);
   }
 
-  var mailOptions = {
+  const mailOptions = {
     from: '"Our Code World " <noreply@sonnywebdesign.com>', // sender address (who sends)
     to: 'andreasonny83@gmail.com', // list of receivers
     subject: 'Hello', // Subject line
@@ -73,12 +59,12 @@ function sendEmail(req, res) {
   };
 
   transporter.sendMail(mailOptions, function(error, info) {
-    if(error) {
+    if (error) {
       console.log(error);
-      res.json({yo: 'error'});
+      res.json({error: 'error'});
     } else {
       console.log('Message sent: ' + info.response);
-      res.json({yo: info.response});
+      res.json({sent: info.response});
     };
   });
 }
@@ -89,6 +75,6 @@ app.listen(port, function() {
   console.log([
     'env = ' + app.get('env'),
     '__dirname = ' + __dirname,
-    'process.cwd = ' + process.cwd()
+    'process.cwd = ' + process.cwd(),
   ].join('\n'));
 });
