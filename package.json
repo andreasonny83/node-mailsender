@@ -13,6 +13,7 @@
   },
   "homepage": "https://github.com/andreasonny83/node-mailsender#readme",
   "scripts": {
+    "start": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "license": "MIT",

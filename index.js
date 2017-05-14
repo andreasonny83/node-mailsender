@@ -36,7 +36,7 @@ function sendEmail(req, res) {
   }
 
   if (!!ciphers) {
-    if (!transporter.hasOwnProperty(tls)) {
+    if (!transporter.hasOwnProperty('tls')) {
       transporter.tls = {};
     }
 
