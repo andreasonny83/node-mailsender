@@ -21,6 +21,7 @@ const secure = process.env.SECURE === 'true' || false;
 const secureConnection = process.env.SECURE_CONNECTION === 'true' || false;
 const rejectUnauthorized = process.env.REJECT_UNAUTHORIZED || null;
 const ciphers = process.env.CIPHERS || null;
+const from = process.env.EMAIL_SENDER_ADDRESS;
 
 // Private methods
 
@@ -66,7 +67,7 @@ const sendEmail = (req, res) => {
   }
 
   const mailOptions = {
-    from: `'${req.body.from}' <noreply@sonnywebdesign.com>`, // sender address (who sends)
+    from: `'${req.body.from}' <${from}>`, // sender address (who sends)
     to: req.body.to, // list of receivers
     subject: req.body.subject, // Subject line
     text: req.body.text, // plaintext body
