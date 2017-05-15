@@ -63,10 +63,23 @@ HOST_NAME | undefined | Your email host provider
 PORT_NUMBER | undefined | Your email host provider port number
 USER_NAME | undefined | Your email address or username
 PASSWORD | undefined | Your email password
+EMAIL_SENDER_ADDRESS | '' | The email address that will be displayed in the client's emails `from` field
 SECURE | false | Use secure SSL
 SECURE_CONNECTION | false | Use secure connection
 REJECT_UNAUTHORIZED | null | Reject anouthorized requests
 CIPHERS | null | ciphers must be required by your host service
+
+## Send emails
+
+The porpouse of this app iss sending emails. So, in order to do that, you must send a POST request to the `/send` endpoint containing the following informations in the request's `body`:
+
+Name | Default value | Description
+--- | --- | ---
+from | null | The display name for the sender, the real email address will remail the one set using the `EMAIL_SENDER_ADDRESS` coming from the Environment variables.
+to | null | The destinator of your email
+subject | null |  Set the email's subject
+text | null | If set, this will be used for displaying a text version of the email, in case the client doesn't support the HTML5 format
+html | null | This will contain the HTML template you want to send in your email
 
 ## Contributing
 
