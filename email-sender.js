@@ -75,6 +75,8 @@ const sendEmail = (req, res) => {
   };
   
   if (!!debug) {
+    console.log('\Request body:\n============\n');
+    console.log(req.body);
     console.log('\mailOptions:\n============\n');
     console.log(mailOptions);
   }
