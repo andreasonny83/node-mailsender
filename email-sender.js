@@ -73,6 +73,11 @@ const sendEmail = (req, res) => {
     text: req.body.text, // plaintext body
     html: req.body.html // html body
   };
+  
+  if (!!debug) {
+    console.log('\mailOptions:\n============\n');
+    console.log(mailOptions);
+  }
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
